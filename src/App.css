@@ -24,3 +24,11 @@ body {
 .box {
   width: 100%;
 }
+.dates {
+  display: flex;
+  direction: rtl;
+  text-align: right;
+}
+.dates .month {
+  width: 300px;
+}
