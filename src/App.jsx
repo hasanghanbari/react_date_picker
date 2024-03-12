@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 // import moment from "moment";
 import moment from "jalali-moment";
 
+moment.updateLocale('fa', {
+  week: {
+    dow: 6 // Saturday
+  }
+});
+
 import "./App.css";
 
 function App() {
@@ -12,8 +18,11 @@ function App() {
 
   const [mainMonth, setMainMonth] = useState(todayMonth);
 
-  const months = [];
-  const days = [];
+  const [monthElement, setMonthElement] = useState([]);
+  const [emptyDayElement, setEmptyDayElement] = useState([]);
+
+  // const months = [];
+  // const days = [];
 
   const [showDropdown, setShowDropdown] = useState(false);
   const jalaliMonths = [
@@ -117,7 +126,7 @@ function App() {
     },
   ];
   console.log("todayMonth", todayYear, todayMonth, todayDay);
-  const [today, setToday] = useState(todayJalali);
+
   const [datepicker, setDatepicker] = useState({
     monthCount: 2,
     activeMonth: 2,
@@ -125,49 +134,72 @@ function App() {
   });
 
   const setMonths = () => {
-    // jalaliMonths.forEach( month => {
-    const month = jalaliMonths.find((x) => x.id == mainMonth);
-    console.log('month', month, mainMonth, jalaliMonths);
-    datepicker.months.push({
-      id: month.id,
-      title: month.title,
-      year: 1402,
-      days: [],
-    });
-    // })
+    let dateMonth = +mainMonth;
+    let dateYear = +todayYear;
+
+    for (let index = 0; index < datepicker.monthCount; index++) {
+      const month = jalaliMonths.find((x) => x.id == dateMonth);
+      console.log("month", month, dateMonth);
+      datepicker.months.push({
+        id: month.id,
+        title: month.title,
+        year: dateYear,
+        days: [],
+      });
+      dateYear = dateMonth === 12 ? dateYear + 1 : dateYear;
+      dateMonth = dateMonth === 12 ? 1 : dateMonth + 1;
+    }
+    console.log("datepicker", datepicker);
   };
 
   const setDays = () => {
     datepicker.months.forEach((month) => {
       month.days.length = 0;
-      const dayCount = 30;
+      const dayCount = 31;
       for (let day = 0; day < dayCount; day++) {
-        month.days.push({
-          id: day + 1,
-          price: null,
-          state: "active",
-          dayOfWeek: 1,
-        });
+        const date = moment(
+          month.year + "/" + month.id + "/" + (day + 1),
+          "jYYYY/jM/jD"
+        );
+        if (date.isValid()) {
+          month.days.push({
+            id: day + 1,
+            price: null,
+            state: "active",
+            dayOfWeek: date.day(),
+          });
+        }
       }
     });
-      console.log("datepicker", datepicker);
   };
 
-  const setElementDatepicker = () => {
+  const setElementDatepicker = async () => {
     /**
      * Set Datpicker
      */
-    console.log('setElementDatepicker datepicker', datepicker);
+    setMonthElement("");
+    const elements = [];
     for (let index = 0; index < datepicker.monthCount; index++) {
-      days.length = 0;
-      datepicker.months[index].days.forEach((day, index) => {
+      const days = [];
+
+      const dayOfWeek = +datepicker.months[index].days[0].dayOfWeek;
+      for (let empryIndex = 0; empryIndex < dayOfWeek; empryIndex++) {
+        days.push(<span className={""} key={"e" + index + empryIndex}></span>);
+      }
+      datepicker.months[index].days.forEach((day, dayIndex) => {
         days.push(
-          <span className="calendar-cell" key={index}>
+          <span
+            className={
+              "calendar-cell " + (+todayDay === day.id ? "is_today " : "")
+            }
+            key={dayIndex}
+          >
             {day.id}
           </span>
         );
       });
-      months.push(
+
+      const newElement = (
         <div className="month" key={index + 1}>
           <h5>{datepicker.months[index].title}</h5>
           <div className="calendar-grid">
@@ -182,12 +214,14 @@ function App() {
           </div>
         </div>
       );
+      elements.push(newElement);
     }
+    console.log("elements", elements);
+    setMonthElement(elements);
   };
 
   useEffect(() => {
     return () => {
-      console.log("today", today);
       /**
        * Set Months
        */
@@ -202,7 +236,6 @@ function App() {
     };
   }, []);
 
-  console.log("datepicker", datepicker);
   return (
     <>
       <h1>react Datepicker</h1>
@@ -239,7 +272,7 @@ function App() {
                 showDropdown ? `show` : ``
               }`}
             >
-              <div className="dates">{months}</div>
+              <div className="dates">{monthElement}</div>
             </div>
           </div>
         </div>
