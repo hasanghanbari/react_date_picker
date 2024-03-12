@@ -28,7 +28,54 @@ body {
   display: flex;
   direction: rtl;
   text-align: right;
+  gap: 32px;
 }
 .dates .month {
   width: 300px;
+}
+.dates .month h5 {
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #000;
+}
+
+.calendar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.calendar-grid > span {
+  flex: 0 0 14.2857142857%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 5px;
+}
+
+.calendar-grid .calendar-weekday {
+  font-size: 14px;
+  font-weight: 600;
+}
+.calendar-grid .calendar-cell {
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+}
+.calendar-grid .calendar-cell.is_today {
+  border: 1px solid #ddd;
+}
+.calendar-grid .calendar-cell.is_holiday {
+  color: #ff0000;
+}
+.calendar-grid .calendar-cell.is_selected {
+  background-color: #08c27b;
+}
+.calendar-grid .calendar-cell:hover {
+  background-color: #ddd;
+}
+.calendar-grid .calendar-cell:active {
+  background-color: #ccc;
 }
