@@ -2,12 +2,6 @@ import { useEffect, useState } from "react";
 // import moment from "moment";
 import moment from "jalali-moment";
 
-moment.updateLocale('fa', {
-  week: {
-    dow: 6 // Saturday
-  }
-});
-
 import "./App.css";
 
 function App() {
@@ -155,18 +149,26 @@ function App() {
   const setDays = () => {
     datepicker.months.forEach((month) => {
       month.days.length = 0;
-      const dayCount = 31;
+      const startMonth = moment(
+        month.year + "/" + month.id + "/01",
+        "jYYYY/jM/jD"
+      );
+      const dayCount = startMonth.jDaysInMonth();
       for (let day = 0; day < dayCount; day++) {
         const date = moment(
           month.year + "/" + month.id + "/" + (day + 1),
           "jYYYY/jM/jD"
         );
+        const dayOfWeek = (date.day() + 1) % 7;
+        const holiday = dayOfWeek === 6 ? true : false;
+        console.log("date2", date.jDaysInMonth());
         if (date.isValid()) {
           month.days.push({
             id: day + 1,
             price: null,
             state: "active",
-            dayOfWeek: date.day(),
+            holiday: holiday,
+            dayOfWeek: dayOfWeek,
           });
         }
       }
@@ -182,17 +184,25 @@ function App() {
     for (let index = 0; index < datepicker.monthCount; index++) {
       const days = [];
 
-      const dayOfWeek = +datepicker.months[index].days[0].dayOfWeek;
+      const month = datepicker.months[index];
+      const dayOfWeek = +month.days[0].dayOfWeek;
       for (let empryIndex = 0; empryIndex < dayOfWeek; empryIndex++) {
         days.push(<span className={""} key={"e" + index + empryIndex}></span>);
       }
-      datepicker.months[index].days.forEach((day, dayIndex) => {
+      month.days.forEach((day, dayIndex) => {
         days.push(
           <span
             className={
-              "calendar-cell " + (+todayDay === day.id ? "is_today " : "")
+              "calendar-cell " +
+              (+todayYear === month.year,
+              +todayMonth === month.id &&
+              +todayDay === day.id
+                ? "is_today "
+                : "") +
+              (day.holiday ? "is_holiday " : "")
             }
             key={dayIndex}
+            onClick={setDate(month.year, month.id, day.id)}
           >
             {day.id}
           </span>
@@ -219,6 +229,10 @@ function App() {
     console.log("elements", elements);
     setMonthElement(elements);
   };
+
+  const setDate = (year, month, day) => {
+
+  }
 
   useEffect(() => {
     return () => {
