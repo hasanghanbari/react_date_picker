@@ -26,9 +26,14 @@ body {
 }
 .dates {
   display: flex;
-  direction: rtl;
   text-align: right;
   gap: 32px;
+}
+.dates.isGregorian {
+  direction: ltr;
+}
+.dates.isJalali {
+  direction: rtl;
 }
 .dates .month {
   width: 300px;
@@ -70,12 +75,36 @@ body {
 .calendar-grid .calendar-cell.is_holiday {
   color: #ff0000;
 }
-.calendar-grid .calendar-cell.is_selected {
-  background-color: #08c27b;
-}
 .calendar-grid .calendar-cell:hover {
   background-color: #ddd;
 }
+.calendar-grid .calendar-cell.is_highlight {
+  background-color: rgba(28, 175, 119, 0.247);
+}
+.calendar-grid .calendar-cell.is_selected {
+  background-color: #08c27b;
+  color: #fff;
+  font-weight: 600;
+  font-size: 18px;
+}
+.calendar-grid .calendar-cell.is_selected:hover {
+  background-color: #09a86b;
+}
 .calendar-grid .calendar-cell:active {
   background-color: #ccc;
+}
+
+.arrow {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  padding-inline: 35px;
+}
+.arrow .arrow-action {
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  color: #000;
 }

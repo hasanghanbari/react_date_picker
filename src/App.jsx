@@ -5,11 +5,22 @@ import moment from "jalali-moment";
 import "./App.css";
 
 function App() {
-  const todayJalali = moment().locale("fa").format("YYYY/M/D");
-  const todayYear = moment().locale("fa").format("YYYY");
-  const todayMonth = moment().locale("fa").format("M");
-  const todayDay = moment().locale("fa").format("D");
+  // const todayJalali = moment().locale("fa").format("YYYY/MM/DD");
 
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [calendarType, setCalendarType] = useState("isJalali");
+  const [wayType, setWayType] = useState('isOne')
+
+  const [todayDay, setTodayDay] = useState(moment().locale("fa").format("DD"));
+  const [todayMonth, setTodayMonth] = useState(
+    moment().locale("fa").format("MM")
+  );
+  const [todayYear, setTodayYear] = useState(
+    moment().locale("fa").format("YYYY")
+  );
+
+  const [mainYear, setMainYear] = useState(todayYear);
   const [mainMonth, setMainMonth] = useState(todayMonth);
 
   const [monthElement, setMonthElement] = useState([]);
@@ -119,7 +130,6 @@ function App() {
       title: "December",
     },
   ];
-  console.log("todayMonth", todayYear, todayMonth, todayDay);
 
   const [datepicker, setDatepicker] = useState({
     monthCount: 2,
@@ -129,10 +139,14 @@ function App() {
 
   const setMonths = () => {
     let dateMonth = +mainMonth;
-    let dateYear = +todayYear;
-
+    let dateYear = +mainYear;
+    datepicker.months.length = 0;
     for (let index = 0; index < datepicker.monthCount; index++) {
-      const month = jalaliMonths.find((x) => x.id == dateMonth);
+      let month = jalaliMonths.find((x) => x.id == dateMonth);
+      if (calendarType === "isGregorian") {
+        month = gregorianMonths.find((x) => x.id == dateMonth);
+      }
+
       console.log("month", month, dateMonth);
       datepicker.months.push({
         id: month.id,
@@ -140,6 +154,7 @@ function App() {
         year: dateYear,
         days: [],
       });
+
       dateYear = dateMonth === 12 ? dateYear + 1 : dateYear;
       dateMonth = dateMonth === 12 ? 1 : dateMonth + 1;
     }
@@ -161,7 +176,7 @@ function App() {
         );
         const dayOfWeek = (date.day() + 1) % 7;
         const holiday = dayOfWeek === 6 ? true : false;
-        console.log("date2", date.jDaysInMonth());
+        // console.log("date2", date.jDaysInMonth());
         if (date.isValid()) {
           month.days.push({
             id: day + 1,
@@ -190,19 +205,21 @@ function App() {
         days.push(<span className={""} key={"e" + index + empryIndex}></span>);
       }
       month.days.forEach((day, dayIndex) => {
+        const curentDate = month.year + "/" + month.id + "/" + day.id;
         days.push(
           <span
             className={
               "calendar-cell " +
               (+todayYear === month.year,
-              +todayMonth === month.id &&
-              +todayDay === day.id
+              +todayMonth === month.id && +todayDay === day.id
                 ? "is_today "
                 : "") +
-              (day.holiday ? "is_holiday " : "")
+              (day.holiday ? "is_holiday " : "") +
+              (curentDate === fromDate ? "is_selected " : "") +
+              (curentDate === toDate ? "is_selected " : "")
             }
             key={dayIndex}
-            onClick={setDate(month.year, month.id, day.id)}
+            onClick={() => selectDate(month.year, month.id, day.id)}
           >
             {day.id}
           </span>
@@ -213,13 +230,27 @@ function App() {
         <div className="month" key={index + 1}>
           <h5>{datepicker.months[index].title}</h5>
           <div className="calendar-grid">
-            <span className="calendar-weekday">ش</span>
-            <span className="calendar-weekday">ی</span>
-            <span className="calendar-weekday">د</span>
-            <span className="calendar-weekday">س</span>
-            <span className="calendar-weekday">چ</span>
-            <span className="calendar-weekday">پ</span>
-            <span className="calendar-weekday">ج</span>
+            <span className="calendar-weekday">
+              {calendarType === "isJalali" ? "ش" : "s"}
+            </span>
+            <span className="calendar-weekday">
+              {calendarType === "isJalali" ? "ی" : "s"}
+            </span>
+            <span className="calendar-weekday">
+              {calendarType === "isJalali" ? "د" : "m"}
+            </span>
+            <span className="calendar-weekday">
+              {calendarType === "isJalali" ? "س" : "t"}
+            </span>
+            <span className="calendar-weekday">
+              {calendarType === "isJalali" ? "چ" : "w"}
+            </span>
+            <span className="calendar-weekday">
+              {calendarType === "isJalali" ? "پ" : "t"}
+            </span>
+            <span className="calendar-weekday">
+              {calendarType === "isJalali" ? "ج" : "f"}
+            </span>
             {days}
           </div>
         </div>
@@ -230,25 +261,79 @@ function App() {
     setMonthElement(elements);
   };
 
-  const setDate = (year, month, day) => {
+  const selectDate = (year, month, day) => {
+    const date = year + "/" + month + "/" + day;
+    console.log("select date", date);
+    setFromDate(date);
+  };
 
-  }
+  const arrowMonth = (type) => {
+    const date = mainYear + "/" + mainMonth + "/01";
+
+    let newYear = moment(date).add(1, "month").format("YYYY");
+    let newMonth = moment(date).add(1, "month").format("MM");
+
+    if (type === "right") {
+      newYear = moment(date).add(-1, "month").format("YYYY");
+      newMonth = moment(date).add(-1, "month").format("MM");
+    }
+
+    setMainYear(newYear);
+    setMainMonth(newMonth);
+  };
+
+  const changeCalendar = () => {
+    const mainDate = mainYear + "/" + mainMonth + "/15";
+    console.log(
+      "mainDate",
+      mainDate,
+      moment.from(mainDate, "fa", "YYYY/MM/DD").format("YYYY")
+    );
+    if (calendarType === "isJalali") {
+      setCalendarType("isGregorian");
+
+      // set main date for gregorean
+      setMainYear(moment.from(mainDate, "fa", "YYYY/MM/DD").format("YYYY"));
+      setMainMonth(moment.from(mainDate, "fa", "YYYY/MM/DD").format("MM"));
+
+      // set today for gregorean
+      setTodayYear(moment().format("YYYY"));
+      setTodayMonth(moment().format("MM"));
+      setTodayDay(moment().format("DD"));
+      return;
+    }
+    setCalendarType("isJalali");
+
+    // set main date for jalali
+    setMainYear(moment(mainDate).locale("fa").format("YYYY"));
+    setMainMonth(moment(mainDate).locale("fa").format("MM"));
+
+    // set today for jalali
+    setTodayYear(moment().locale("fa").format("YYYY"));
+    setTodayMonth(moment().locale("fa").format("MM"));
+    setTodayDay(moment().locale("fa").format("DD"));
+  };
+
+  const goToToday = () => {
+    const mainDate = todayYear + "/" + todayMonth + "/" + todayDay;
+
+    setMainYear(moment(mainDate).format("YYYY"));
+    setMainMonth(moment(mainDate).format("MM"));
+  };
 
   useEffect(() => {
-    return () => {
-      /**
-       * Set Months
-       */
-      setMonths();
+    /**
+     * Set Months
+     */
+    setMonths();
 
-      /**
-       * set days on months
-       */
-      setDays();
+    /**
+     * set days on months
+     */
+    setDays();
 
-      setElementDatepicker();
-    };
-  }, []);
+    setElementDatepicker();
+  }, [fromDate, mainMonth, calendarType]);
 
   return (
     <>
@@ -265,6 +350,7 @@ function App() {
                 list="datalistOptions"
                 id="exampleDataList"
                 placeholder=""
+                value={fromDate}
                 onClick={() => setShowDropdown(true)}
               />
             </div>
@@ -277,6 +363,7 @@ function App() {
                 list="datalistOptions"
                 id="exampleDataList"
                 placeholder=""
+                value={toDate}
               />
             </div>
           </div>
@@ -286,7 +373,36 @@ function App() {
                 showDropdown ? `show` : ``
               }`}
             >
-              <div className="dates">{monthElement}</div>
+              <div className="top-action"></div>
+              <div className="arrow">
+                <div
+                  className="arrow-action"
+                  onClick={() => arrowMonth("right")}
+                >
+                  {"<"}
+                </div>
+                <div
+                  className="arrow-action"
+                  onClick={() => arrowMonth("left")}
+                >
+                  {">"}
+                </div>
+              </div>
+              <div className={"dates " + calendarType}>{monthElement}</div>
+              <div className="bottom-action d-flex justify-content-between">
+                <button
+                  className="btn btn-link"
+                  onClick={() => goToToday()}
+                >
+                  برو امروز
+                </button>
+                <button
+                  className="btn btn-link"
+                  onClick={() => changeCalendar()}
+                >
+                  {calendarType === "isJalali" ? "تقویم میلادی" : "تقویم شمسی"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
