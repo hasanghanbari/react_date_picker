@@ -10,7 +10,7 @@ function App() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [calendarType, setCalendarType] = useState("isJalali");
-  const [wayType, setWayType] = useState('isOne')
+  const [isRoundtrip, setIsRoundtrip] = useState(false);
 
   const [todayDay, setTodayDay] = useState(moment().locale("fa").format("DD"));
   const [todayMonth, setTodayMonth] = useState(
@@ -33,100 +33,124 @@ function App() {
   const jalaliMonths = [
     {
       id: 1,
+      value: "01",
       title: "فروردین",
     },
     {
       id: 2,
+      value: "02",
       title: "اردیبهشت",
     },
     {
       id: 3,
+      value: "03",
       title: "خرداد",
     },
     {
       id: 4,
+      value: "04",
       title: "تیر",
     },
     {
       id: 5,
+      value: "05",
       title: "مرداد",
     },
     {
       id: 6,
+      value: "06",
       title: "شهریور",
     },
     {
       id: 7,
+      value: "07",
       title: "مهر",
     },
     {
       id: 8,
+      value: "08",
       title: "آبان",
     },
     {
       id: 9,
+      value: "09",
       title: "آذر",
     },
     {
       id: 10,
+      value: "10",
       title: "دی",
     },
     {
       id: 11,
+      value: "11",
       title: "بهمن",
     },
     {
       id: 12,
+      value: "12",
       title: "اسفند",
     },
   ];
   const gregorianMonths = [
     {
       id: 1,
+      value: "01",
       title: "January",
     },
     {
       id: 2,
+      value: "02",
       title: "February",
     },
     {
       id: 3,
+      value: "03",
       title: "March",
     },
     {
       id: 4,
+      value: "04",
       title: "April",
     },
     {
       id: 5,
+      value: "05",
       title: "May",
     },
     {
       id: 6,
+      value: "06",
       title: "June",
     },
     {
       id: 7,
+      value: "07",
       title: "July",
     },
     {
       id: 8,
+      value: "08",
       title: "August",
     },
     {
       id: 9,
+      value: "09",
       title: "September",
     },
     {
       id: 10,
+      value: "10",
       title: "October",
     },
     {
       id: 11,
+      value: "11",
       title: "November",
     },
     {
       id: 12,
+      value: "12",
       title: "December",
     },
   ];
@@ -150,6 +174,7 @@ function App() {
       console.log("month", month, dateMonth);
       datepicker.months.push({
         id: month.id,
+        value: month.value,
         title: month.title,
         year: dateYear,
         days: [],
@@ -180,6 +205,7 @@ function App() {
         if (date.isValid()) {
           month.days.push({
             id: day + 1,
+            value: (day + 1 < 10 ? "0" : "") + (day+1),
             price: null,
             state: "active",
             holiday: holiday,
@@ -205,13 +231,13 @@ function App() {
         days.push(<span className={""} key={"e" + index + empryIndex}></span>);
       }
       month.days.forEach((day, dayIndex) => {
-        const curentDate = month.year + "/" + month.id + "/" + day.id;
+        const curentDate = month.year + "/" + month.value + "/" + day.value;
         days.push(
           <span
             className={
               "calendar-cell " +
               (+todayYear === month.year,
-              +todayMonth === month.id && +todayDay === day.id
+              +todayMonth === month.value && +todayDay === day.value
                 ? "is_today "
                 : "") +
               (day.holiday ? "is_holiday " : "") +
@@ -219,7 +245,7 @@ function App() {
               (curentDate === toDate ? "is_selected " : "")
             }
             key={dayIndex}
-            onClick={() => selectDate(month.year, month.id, day.id)}
+            onClick={() => selectDate(month.year, month.value, day.value)}
           >
             {day.id}
           </span>
@@ -343,7 +369,10 @@ function App() {
           <div className="inputs">
             <div className="from-date">
               <label htmlFor="exampleDataList" className="form-label">
-                از تاریخ:
+                {isRoundtrip ?
+                'از'
+                : ''}
+                 تاریخ:
               </label>
               <input
                 className="form-control"
@@ -354,18 +383,20 @@ function App() {
                 onClick={() => setShowDropdown(true)}
               />
             </div>
-            <div className="to-date">
-              <label htmlFor="exampleDataList" className="form-label">
-                تا تاریخ:
-              </label>
-              <input
-                className="form-control"
-                list="datalistOptions"
-                id="exampleDataList"
-                placeholder=""
-                value={toDate}
-              />
-            </div>
+            {isRoundtrip ?
+              <div className="to-date">
+                <label htmlFor="exampleDataList" className="form-label">
+                  تا تاریخ:
+                </label>
+                <input
+                  className="form-control"
+                  list="datalistOptions"
+                  id="exampleDataList"
+                  placeholder=""
+                  value={toDate}
+                />
+              </div>
+            : ''}
           </div>
           <div className={`dropdown box`}>
             <div
